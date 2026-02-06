@@ -266,11 +266,12 @@ def _build_docx_from_scratch(
     _style(p)
 
     items = [
-        "Biaya Submit Artikel yang saya ajukan seperti yang tersebut pada lampiran belum pernah saya pertanggungjawabkan pada penelitian yang telah dilaksanakan, atau belum pernah menerima bantuan publikasi dari pihak/sumber dana lainnya, dan jika di kemudian hari terbukti bahwa biaya submit artikel yang saya ajukan telah pernah menerima bantuan publikasi dari pihak/sumber dana lainnya, maka saya akan mengembalikan dana insentif yang saya terima ke rekening Universitas Syiah Kuala;",
-        "Artikel ilmiah/Opini Media Massa/Hak Kekayaan Intelektual yang saya ajukan seperti yang tersebut pada lampiran adalah bebas plagiarisme/bukan jiplakan dari hasil karya orang lain;",
-        "Artikel ilmiah/Opini Media Massa/Hak Kekayaan Intelektual yang saya ajukan seperti yang tersebut pada lampiran belum pernah mendapatkan insentif pada periode-periode sebelumnya, atau dari sumber dana lainnya;",
-        "Benar nomor rekening dan nama bank yang telah saya cantumkan untuk menerima biaya submit artikel/insentif publikasi/opini media massa/hak kekayaan intelektual;",
-        "Saya bersedia mengembalikan dana insentif yang saya terima ke rekening Universitas Syiah Kuala bila di kemudian hari terbukti bahwa artikel ilmiah/opini media massa/hak kekayaan intelektual yang saya ajukan seperti yang tersebut pada tabel, dinyatakan bukan milik saya atau sudah pernah mendapat insentif/opini media massa/hak kekayaan intelektual pada periode-periode sebelumnya dari sumber dana lainnya atau tidak sesuai dengan panduan/ketentuan yang berlaku.",
+        "Biaya Submit Artikel yang saya ajukan seperti yang tersebut pada lampiran belum pernah saya pertanggungjawabkan pada penelitian yang telah dilaksanakan, atau belum pernah menerima bantuan publikasi dari pihak/sumber dana lainnya, dan jika di kemudian hari terbukti bahwa biaya submit artikel yang saya ajukan telah pernah menerima bantuan publikasi dari pihak/sumber dana lainnya, maka saya akan mengembalikan dana insentif yang saya terima ke rekening Universitas Syiah Kuala.",
+        "Biaya submit artikel yang saya ajukan seperti yang tersebut pada lampiran belum pernah dipertanggungjawabkan pada laporan penelitian dan belum pernah menerima bantuan publikasi dari sumber dana lain. Apabila di kemudian hari terbukti sebaliknya, saya bersedia mengembalikan dana yang telah diterima ke rekening Universitas Syiah Kuala.",
+        "Artikel ilmiah/opini media massa/hak kekayaan intelektual yang diajukan seperti yang tersebut pada lampiran bebas plagiarisme dan merupakan karya asli.",
+        "Artikel ilmiah/opini media massa/hak kekayaan intelektual yang diajukan seperti yang tersebut pada lampiran belum pernah menerima insentif pada periode sebelumnya maupun dari sumber dana lain.",
+        "Saya bersedia mengembalikan dana insentif apabila di kemudian hari terbukti bahwa karya yang diajukan bukan milik saya, sudah pernah menerima insentif, atau tidak sesuai dengan ketentuan yang berlaku.",
+        "Nomor rekening dan nama bank yang saya cantumkan benar dan aktif untuk menerima dana insentif."
     ]
 
     # ✅ STATEMENT TABLE: persis seperti awal (kolom kiri kecil, kanan lebar)
