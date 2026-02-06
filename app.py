@@ -147,11 +147,18 @@ sample_count = st.number_input(
     "Berapa sample PDF untuk dicek cepat?", min_value=1, max_value=20, value=5
 )
 shuffle_sample = st.checkbox("Acak sample (random)", value=False)
+generate_count = st.number_input(
+    "Generate PDF untuk berapa orang?",
+    min_value=1,
+    max_value=len(df_main),
+    value=len(df_main),
+)
 
 btn_generate = st.button("🚀 Generate ZIP PDF (Tanpa Email)", use_container_width=True)
 
 if btn_generate:
-    people = list(iter_people_from_df(df_main))
+    # Ambil data sesuai jumlah yang dipilih
+    people = list(iter_people_from_df(df_main))[:generate_count]
     total = len(people)
 
     if total == 0:
