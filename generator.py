@@ -63,6 +63,11 @@ def _format_tanggal(dt: datetime) -> str:
     return dt.strftime("%d %B %Y")
 
 
+def _format_tanggal_short(dt: datetime) -> str:
+    """Format dd-mm-yyyy untuk surat tanda terima."""
+    return dt.strftime("%d-%m-%Y")
+
+
 def _format_rupiah(val) -> str:
     if val is None or (isinstance(val, float) and pd.isna(val)):
         return ""
@@ -227,7 +232,51 @@ def _build_docx_from_scratch(
 ) -> Document:
     doc = Document()
 
-    # ===== HALAMAN 1 =====
+    # ===== HALAMAN 1: SURAT TANDA TERIMA DOKUMEN =====
+    p = doc.add_paragraph("Surat Tanda Terima Dokumen")
+    _style(p, size=12, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+    doc.add_paragraph("")
+
+    no_proposal_list = [str(row.get("no_prop", "")).strip() for row in lampiran_rows]
+    no_proposal_text = ", ".join(no_proposal_list) if no_proposal_list else "–"
+
+    p = doc.add_paragraph(
+        "Telah diterima dokumen berupa Surat Pernyataan Tanggung Jawab Mutlak (SPTJM) "
+        "Insentif untuk nomor proposal, "
+        + no_proposal_text
+        + ","
+    )
+    _style(p, justify=True)
+    doc.add_paragraph("")
+
+    p = doc.add_paragraph(
+        "Demikian surat tanda terima ini dibuat sebagai bukti penerimaan dokumen."
+    )
+    _style(p, justify=True)
+    doc.add_paragraph("")
+
+    tanggal_short = _format_tanggal_short(exec_dt)
+    p = doc.add_paragraph()
+    _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
+    r1 = p.add_run("Banda Aceh, ")
+    r2 = p.add_run(tanggal_short)
+    for r in (r1, r2):
+        r.font.name = "Cambria"
+        r.font.size = Pt(11)
+    r2.font.color.rgb = RGBColor(255, 255, 255)
+
+    p = doc.add_paragraph("Yang menerima,")
+    _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
+    doc.add_paragraph("")
+    doc.add_paragraph("")
+    doc.add_paragraph("")
+    p = doc.add_paragraph("(__________________________)")
+    _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
+    doc.add_paragraph("")
+
+    doc.add_page_break()
+
+    # ===== HALAMAN 2: SPTJM =====
     p = doc.add_paragraph("SURAT PERNYATAAN TANGGUNGJAWAB MUTLAK (SPTJM)")
     _style(p, size=12, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
 
@@ -322,7 +371,7 @@ def _build_docx_from_scratch(
     p = doc.add_paragraph(f"{person.nama}\nNIP. {person.nip}")
     _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
 
-    # ===== HALAMAN 2 =====
+    # ===== HALAMAN 3: LAMPIRAN =====
     doc.add_page_break()
 
     p = doc.add_paragraph(
