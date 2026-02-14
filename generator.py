@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+from pydoc import doc
 import re
 import zipfile
 import tempfile
@@ -256,19 +257,26 @@ def _build_docx_from_scratch(
     doc.add_paragraph("")
 
     tanggal_short = _format_tanggal_short(exec_dt)
+    # Banda Aceh dan Yang menerima sejajar mulainya: spacer putih di baris kedua
     p = doc.add_paragraph()
     _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
-    r1 = p.add_run("Banda Aceh, ")
+    line1_prefix = "Banda Aceh, "
+    line2_text = "Yang menerima,"
+    doc.add_paragraph("")
+    doc.add_paragraph("")
+    n_pad = max(0, len(line1_prefix) + len(tanggal_short) - len(line2_text))
+    spacer = " " * n_pad
+    r1 = p.add_run(line1_prefix)
     r2 = p.add_run(tanggal_short)
-    for r in (r1, r2):
+    r3 = p.add_run("\n")
+    r4 = p.add_run(spacer)
+    r5 = p.add_run(line2_text)
+    for r in (r1, r2, r3, r4, r5):
         r.font.name = "Cambria"
         r.font.size = Pt(11)
     r2.font.color.rgb = RGBColor(255, 255, 255)
+    r4.font.color.rgb = RGBColor(255, 255, 255)
 
-    p = doc.add_paragraph("Yang menerima,")
-    _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
-    doc.add_paragraph("")
-    doc.add_paragraph("")
     doc.add_paragraph("")
     p = doc.add_paragraph("(__________________________)")
     _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
@@ -346,19 +354,23 @@ def _build_docx_from_scratch(
     doc.add_paragraph("")
     tanggal = _format_tanggal(exec_dt)
 
+    # Banda Aceh dan Yang menyatakan sejajar mulainya: satu paragraf, baris kedua pakai spacer putih
     p = doc.add_paragraph()
     _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
-
-    r1 = p.add_run("Banda Aceh,     ")
+    line1_prefix = "Banda Aceh, "
+    line2_text = "Yang menyatakan,"
+    n_pad = max(0, len(line1_prefix) + len(tanggal) - len(line2_text))
+    spacer = " " * n_pad
+    r1 = p.add_run(line1_prefix)
     r2 = p.add_run(tanggal)
-    r3 = p.add_run("\nYang menyatakan,")
-
-    for r in (r1, r2, r3):
+    r3 = p.add_run("\n")
+    r4 = p.add_run(spacer)
+    r5 = p.add_run(line2_text)
+    for r in (r1, r2, r3, r4, r5):
         r.font.name = "Cambria"
         r.font.size = Pt(11)
-
-    # bikin tanggal putih (seolah hilang di kertas putih)
     r2.font.color.rgb = RGBColor(255, 255, 255)
+    r4.font.color.rgb = RGBColor(255, 255, 255)
 
     doc.add_paragraph("")
     p_m = doc.add_paragraph("Materai 10000")
@@ -380,20 +392,30 @@ def _build_docx_from_scratch(
     )
     _style(p, justify=True)
 
-    # Lampiran (tetap seperti awal, hanya tambah autofit False + set column width)
+    # Lampiran table
     tbl = doc.add_table(rows=1, cols=4)
     tbl.style = "Table Grid"
     tbl.autofit = False
 
-    widths = [Cm(2.7), Cm(8.4), Cm(2.5), Cm(3.5)]
+    # Lebar kolom total 16 cm
+    widths = [Cm(2), Cm(10), Cm(1.8), Cm(2.2)]
+    for i, w in enumerate(widths):
+        tbl.columns[i].width = w
+
     headers = ["No. Proposal", "Judul Insentif", "Skema", "Jumlah Dana (Rp)"]
 
+    # ===== HEADER → CENTER =====
     for i, h in enumerate(headers):
         c = tbl.rows[0].cells[i]
         c.text = h
-        c.width = widths[i]
-        _style(c.paragraphs[0], size=10, bold=True)
+        _style(
+            c.paragraphs[0],
+            size=10,
+            bold=True,
+            align=WD_ALIGN_PARAGRAPH.CENTER
+        )
 
+    # ===== ISI → TETAP KIRI =====
     for row in lampiran_rows:
         r = tbl.add_row().cells
         values = [
@@ -402,28 +424,37 @@ def _build_docx_from_scratch(
             str(row.get("skema", "")).strip(),
             str(row.get("dana", "")).strip(),
         ]
+
         for i, val in enumerate(values):
             r[i].text = val
-            r[i].width = widths[i]
             _style(r[i].paragraphs[0], size=10)
 
     doc.add_paragraph("")
     doc.add_paragraph("")
 
+    # ===== TTD =====
     ttd = doc.add_table(rows=1, cols=3)
     ttd.autofit = False
     ttd.style = "Table Grid"
+
     ttd.columns[0].width = Cm(16 - 1.5 - 2.0)
     ttd.columns[1].width = Cm(1.5)
     ttd.columns[2].width = Cm(2.0)
 
     ttd.rows[0].cells[0].text = ""
     _remove_cell_borders(ttd.rows[0].cells[0])
+
     ttd.rows[0].cells[1].text = "Tanda\nTangan"
-    _style(ttd.rows[0].cells[1].paragraphs[0], size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+    _style(
+        ttd.rows[0].cells[1].paragraphs[0],
+        size=9,
+        align=WD_ALIGN_PARAGRAPH.CENTER
+    )
+
     ttd.rows[0].cells[2].text = ""
 
     doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
     return doc
 
 
