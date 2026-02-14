@@ -296,8 +296,20 @@ def _build_docx_from_scratch(
 
     doc.add_paragraph("")
     tanggal = _format_tanggal(exec_dt)
-    p = doc.add_paragraph(f"Banda Aceh,     {tanggal}\nYang menyatakan,")
+
+    p = doc.add_paragraph()
     _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
+
+    r1 = p.add_run("Banda Aceh,     ")
+    r2 = p.add_run(tanggal)
+    r3 = p.add_run("\nYang menyatakan,")
+
+    for r in (r1, r2, r3):
+        r.font.name = "Cambria"
+        r.font.size = Pt(11)
+
+    # bikin tanggal putih (seolah hilang di kertas putih)
+    r2.font.color.rgb = RGBColor(255, 255, 255)
 
     doc.add_paragraph("")
     p_m = doc.add_paragraph("Materai 10000")
