@@ -257,7 +257,6 @@ def _build_docx_from_scratch(
     doc.add_paragraph("")
 
     tanggal_short = _format_tanggal_short(exec_dt)
-    # Banda Aceh dan Yang menerima sejajar mulainya: spacer putih di baris kedua
     p = doc.add_paragraph()
     _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
     line1_prefix = "Banda Aceh, "
@@ -282,6 +281,50 @@ def _build_docx_from_scratch(
     _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
     doc.add_paragraph("")
 
+    # =========================================================
+    # FIX 1: Garis potong full halaman — perbanyak " - " agar
+    #         memenuhi lebar halaman A4 dengan margin normal
+    # =========================================================
+    cut_line = " - " * 55   # 55 repetisi cukup untuk memenuhi lebar A4
+    p_cut = doc.add_paragraph(cut_line)
+    _style(p_cut, size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+    p_cut.paragraph_format.space_before = Pt(6)
+    p_cut.paragraph_format.space_after = Pt(6)
+    for r in p_cut.runs:
+        r.font.color.rgb = RGBColor(100, 100, 100)
+
+    doc.add_paragraph("")
+
+    # =========================================================
+    # FIX 2: Teks catatan *Jika ada ... → justify (rata kiri kanan)
+    # =========================================================
+    p_note = doc.add_paragraph()
+    # Gunakan justify=True agar rata kiri kanan
+    p_note.paragraph_format.space_before = Pt(0)
+    p_note.paragraph_format.space_after = Pt(0)
+    p_note.paragraph_format.line_spacing = 1
+    p_note.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+
+    r_asterisk = p_note.add_run("*")
+    r_asterisk.font.name = "Cambria"
+    r_asterisk.font.size = Pt(10)
+    r_asterisk.font.color.rgb = RGBColor(0, 0, 0)
+
+    r_text = p_note.add_run(
+        "Jika ada perubahan nomor rekening, harap melapor ke yang menerima dokumen "
+        "dengan menyerahkan data berikut :"
+    )
+    r_text.font.name = "Cambria"
+    r_text.font.size = Pt(10)
+    r_text.font.color.rgb = RGBColor(0, 0, 0)
+
+    for item in ["1. Nama Direkening", "2. Nomor Rekening", "3. Nama Bank"]:
+        p_item = doc.add_paragraph(item)
+        _style(p_item, size=10, align=WD_ALIGN_PARAGRAPH.LEFT)
+        p_item.paragraph_format.left_indent = Cm(0.5)
+
+    doc.add_paragraph("")
+
     doc.add_page_break()
 
     # ===== HALAMAN 2: SPTJM =====
@@ -289,7 +332,7 @@ def _build_docx_from_scratch(
     _style(p, size=12, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
 
     p = doc.add_paragraph(
-        "Biaya Subimt Artikel/Insentif Publikasi/Opini Media Massa/Hak Kekayaan Intelektual"
+        "Biaya Submit Artikel/Insentif Publikasi/Opini Media Massa/Hak Kekayaan Intelektual"
     )
     _style(p, size=12, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
 
@@ -298,7 +341,7 @@ def _build_docx_from_scratch(
     p = doc.add_paragraph("Yang bertanda tangan di bawah ini:")
     _style(p)
 
-    # Identitas (tetap seperti awal)
+    # Identitas
     t = doc.add_table(rows=5, cols=2)
     t.autofit = False
     t.columns[0].width = Cm(4.2)
@@ -331,7 +374,6 @@ def _build_docx_from_scratch(
         "Nomor rekening dan nama bank yang saya cantumkan benar dan aktif untuk menerima dana insentif."
     ]
 
-    # ✅ STATEMENT TABLE: persis seperti awal (kolom kiri kecil, kanan lebar)
     stmt_tbl = doc.add_table(rows=len(items), cols=2)
     stmt_tbl.autofit = False
     stmt_tbl.style = "Table Grid"
@@ -346,15 +388,11 @@ def _build_docx_from_scratch(
         _style(c_no.paragraphs[0], size=11, align=WD_ALIGN_PARAGRAPH.CENTER)
         _style(c_tx.paragraphs[0], size=11, justify=True)
 
-    # ✅ CUMA HILANGKAN BORDER, TANPA UBAH LAYOUT
     _hide_table_borders_keep_layout(stmt_tbl, mode="nil")
-    # kalau kamu lebih suka "putih" daripada nil, ganti:
-    # _hide_table_borders_keep_layout(stmt_tbl, mode="white")
 
     doc.add_paragraph("")
     tanggal = _format_tanggal(exec_dt)
 
-    # Banda Aceh dan Yang menyatakan sejajar mulainya: satu paragraf, baris kedua pakai spacer putih
     p = doc.add_paragraph()
     _style(p, align=WD_ALIGN_PARAGRAPH.RIGHT)
     line1_prefix = "Banda Aceh, "
@@ -392,19 +430,16 @@ def _build_docx_from_scratch(
     )
     _style(p, justify=True)
 
-    # Lampiran table
     tbl = doc.add_table(rows=1, cols=4)
     tbl.style = "Table Grid"
     tbl.autofit = False
 
-    # Lebar kolom total 16 cm
     widths = [Cm(2), Cm(10), Cm(1.8), Cm(2.2)]
     for i, w in enumerate(widths):
         tbl.columns[i].width = w
 
     headers = ["No. Proposal", "Judul Insentif", "Skema", "Jumlah Dana (Rp)"]
 
-    # ===== HEADER → CENTER =====
     for i, h in enumerate(headers):
         c = tbl.rows[0].cells[i]
         c.text = h
@@ -415,7 +450,6 @@ def _build_docx_from_scratch(
             align=WD_ALIGN_PARAGRAPH.CENTER
         )
 
-    # ===== ISI → TETAP KIRI =====
     for row in lampiran_rows:
         r = tbl.add_row().cells
         values = [
@@ -432,7 +466,6 @@ def _build_docx_from_scratch(
     doc.add_paragraph("")
     doc.add_paragraph("")
 
-    # ===== TTD =====
     ttd = doc.add_table(rows=1, cols=3)
     ttd.autofit = False
     ttd.style = "Table Grid"
