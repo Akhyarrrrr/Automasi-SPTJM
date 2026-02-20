@@ -78,6 +78,15 @@ def _format_rupiah(val) -> str:
     return str(val).strip()
 
 
+def _clean_number_str(val) -> str:
+    if val is None or (isinstance(val, float) and pd.isna(val)):
+        return ""
+    s = str(val).strip()
+    if s.endswith(".0") and s[:-2].isdigit():
+        return s[:-2]
+    return s
+
+
 def _safe_filename(nama: str, nip: str, ext: str) -> str:
     base = f"SPTJM_{slugify(nama)}_{nip}".strip("_")
     base = base[:120]
@@ -512,10 +521,10 @@ def iter_people_from_df(df: pd.DataFrame) -> Tuple[Person, List[Dict[str, str]]]
     )
 
     for _, row in df.iterrows():
-        nip = str(row.get("NIP", "")).strip()
+        nip = _clean_number_str(row.get("NIP", ""))
         nama = str(row.get("Nama", "")).strip()
         fakultas = str(row.get("Fakultas", "")).strip()
-        rekening = str(row.get("Norek", "")).strip()
+        rekening = _clean_number_str(row.get("Norek", ""))
 
         if not nip or not nama:
             continue
