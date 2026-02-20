@@ -79,11 +79,44 @@ def _format_rupiah(val) -> str:
 
 
 def _clean_number_str(val) -> str:
+    """
+    Bersihkan angka string dari format yang tidak diinginkan:
+    - Hilangkan .0 di akhir
+    - Konversi scientific notation kembali ke angka penuh
+    - Pastikan tetap sebagai string
+    """
     if val is None or (isinstance(val, float) and pd.isna(val)):
         return ""
+    
+    # Jika berupa float (bisa jadi scientific notation yang sudah dikonversi)
+    if isinstance(val, float):
+        # Cek apakah ini scientific notation yang sudah dikonversi
+        # Jika angka sangat besar tapi tidak ada desimal berarti, kemungkinan scientific
+        if val > 1e10 and val == int(val):
+            # Konversi ke int dulu untuk hilangkan .0, lalu ke string
+            return str(int(val))
+        # Jika ada desimal yang berarti, biarkan float tapi format dengan benar
+        if val == int(val):
+            return str(int(val))
+        return str(val)
+    
     s = str(val).strip()
-    if s.endswith(".0") and s[:-2].isdigit():
+    
+    # Handle scientific notation string seperti "1.11101E+15"
+    if "e+" in s.lower() or "e-" in s.lower():
+        try:
+            # Konversi scientific notation ke float lalu ke int jika tidak ada desimal
+            num = float(s)
+            if num == int(num):
+                return str(int(num))
+            return str(int(num))  # Untuk NIP/Norek biasanya integer
+        except (ValueError, OverflowError):
+            pass
+    
+    # Hilangkan .0 di akhir jika ada
+    if s.endswith(".0") and s[:-2].replace(".", "").isdigit():
         return s[:-2]
+    
     return s
 
 
